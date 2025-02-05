@@ -1,0 +1,78 @@
+optimized: 
+  learning_rate_exp: 
+    - float
+    - -3.5
+    - -3.4
+  optimizer:
+    - categorical
+    - [RAdam]
+
+data:
+  path: Datasets
+  dataset: celeba
+  task: generate
+  scaler: "01"
+  shuffle_train: True
+  batch_size: 20
+  label_indices: [2, 8, 18, 19, 20, 24, 31, 34, 36, 39]  # Chosen indices for label transform
+  # Attractive, Black_hair, Heavy_Makeup, High_Cheekbones, Male, No_Beard, Smiling, Wearing_Earrings, 
+  # Wearing_Lipstick, Young
+    
+study:  
+  number_of_trials: 2
+  direction: minimize
+  optimization_target: FidScore
+  study_name: Encoder_Decoder # Encoder_Decoder for unconditional,
+  # Conditional_Encoder_Decoder for conditional.
+  
+learning:
+  num_epochs: 4
+  testevery: 1
+  criterion: MSELoss
+  en_de_model: 'en_de' # 'en_de' or 'conditional_en_de' only.
+  layer: 'nlrl' # 'linear' or 'nlrl' only.
+  
+network:
+  en_de:
+    initial_in_channels: 3
+    final_out_channels: 3
+    hidden_channels: 64
+    device: "cuda"
+
+  conditional_en_de:
+    num_labels: 10
+    label_dim: 256
+    initial_in_channels: 3
+    final_out_channels: 3
+    hidden_channels: 64
+    device: "cuda"
+  
+classifier_nlrl: # make no changes
+  filter_growth_rate: 2
+  dropout_rate: 0.2
+  final_channel: 12
+  activation_function: RReLU
+  initial_out_channels: 32
+  final_layer: "nlrl"
+  num_blocks: 3
+
+classifier_linear: # make no changes
+  filter_growth_rate: 2
+  dropout_rate: 0.2
+  final_channel: 12
+  activation_function: RReLU
+  initial_out_channels: 32
+  final_layer: "linear"
+  num_blocks: 3
+
+discriminator_nlrl: # make no changes
+  name: "GAN" # GAN for en_de and CGAN for c_en_de
+  hidden_channels: 64
+  noise_dim: 9 
+  final_layer: 'nlrl'
+
+discriminator_linear: # make no changes
+  name: "GAN" # GAN for en_de and CGAN for c_en_de
+  hidden_channels: 64
+  noise_dim: 9 
+  final_layer: 'linear'
